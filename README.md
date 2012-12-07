@@ -4,7 +4,7 @@ A small CSS reloader. Will watch files specified and tell the clients listening 
 
 ## Usage
 
-java -jar eyespy.jar file1 file2
+java -jar eyespy.jar file1 file2  
 java -jar eyespy.jar --watch file-with-all-the-files-i-want-to-watch
 
 ## License
