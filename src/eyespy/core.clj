@@ -35,7 +35,7 @@
     (if (:changed? (@files f))
       (do
         (println f "changed")
-        (println (lamina/enqueue channel f))))))
+        (lamina/enqueue channel f)))))
 
 (defn- listener-handler [broadcast-channel]
   (fn [ch handshake]
@@ -63,6 +63,6 @@ or <file1> <file2> <file3> <etc>")
        (server)
        (println "Exiting EyeSpy...")))))
 
-(reset! running false)
-(-main "../angularjs/css/main.css")
-(reset! running true)
+;; (reset! running false)
+;; (-main "../angularjs/css/main.css")
+;; (reset! running true)
