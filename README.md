@@ -10,6 +10,13 @@ java -jar eyespy.jar --watch file-with-all-the-files-i-want-to-watch
 java -jar eyespy.jar --settings settings-file
 ```
 
+Example settings file
+```clojure
+{:notify ["/path/to/file/to/watch.css"]
+ :actions [{:command "command to run after files in the watch dir has changed"
+            :watch-dir "/path/to/a/directory/to/watch"}]}
+```
+
 In Browser  
 Load the eyespy.js script, then run the following:  
 ```javascript
