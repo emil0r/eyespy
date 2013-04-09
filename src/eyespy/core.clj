@@ -34,13 +34,14 @@
 
 (defn- watch-files [files]
   (loop [[f & r] (keys @files)
-         files files
          changed? false]
     (if (nil? f)
       changed?
       (if (= (:mod (@files f)) (fs/mod-time f))
-        (recur r files changed?)
-        (recur r (swap! files assoc f {:mod (fs/mod-time f) :changed? true}) true)))))
+        (recur r changed?)
+        (do
+          (swap! files assoc f {:mod (fs/mod-time f) :changed? true})
+          (recur r true))))))
 
 (defn- notify-browsers [files channel]
   (doseq [f (keys @files)]
@@ -52,7 +53,7 @@
 (defn- run-actions []
   (doseq [[command watch] @-actions]
     (if (watch-files watch)
-      (sh command))))
+      (apply sh (clojure.string/split command #" ")))))
 
 (defn- listener-handler [broadcast-channel]
   (fn [ch handshake]
