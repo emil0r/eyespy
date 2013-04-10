@@ -53,6 +53,7 @@
 (defn- run-actions []
   (doseq [[command watch] @-actions]
     (if (watch-files watch)
+      (println "Running command:" command)
       (apply sh (clojure.string/split command #" ")))))
 
 (defn- listener-handler [broadcast-channel]
