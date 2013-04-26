@@ -2,6 +2,8 @@
 
 A small CSS reloader. Will watch files specified and tell the clients listening which file has been changed upon which the client will reload the approriate CSS file.
 
+Can have actions taken when files in a directory change (like, editing .less/.sass files for example). The action can then run a command that compiles the newly edited files. The newly compiled file is then detected and the browser is refreshed.
+
 ## Usage
 
 ```bash
