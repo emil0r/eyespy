@@ -19,6 +19,14 @@ Example settings file
             :watch-dir "/path/to/a/directory/to/watch"}]}
 ```
 
+Example bash script
+```bash
+#!/bin/sh
+
+cd `dirname "$0"`
+java -jar eyespy.jar --settings settings.clj
+```
+
 In Browser  
 Load the eyespy.js script, then run the following:  
 ```javascript
