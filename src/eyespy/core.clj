@@ -82,6 +82,8 @@
   (println "Done..."))
 
 (defn -main [& args]
+  (println "EyeSpy, with my eye...
+Licensed to" (slurp (io/resource "license")) "\n\n\n------\n")
   (if (empty? args)
     (println "No args given.
 -- options accepted ---
