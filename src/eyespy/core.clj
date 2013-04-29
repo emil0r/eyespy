@@ -65,27 +65,61 @@
     (lamina/siphon broadcast-channel ch)
     (lamina/enqueue broadcast-channel "Connected...")))
 
+(defn- generate-javascript []
+  (println "Generating eyespy.js")
+  (with-open [writer (io/writer "eyespy.js")]
+    (.write writer (slurp (io/resource "eyespy.js"))))
+  (println "Done..."))
+(defn- generate-settings []
+  (println "Generating sample settings file")
+  (with-open [writer (io/writer "settings.conf")]
+    (.write writer (slurp (io/resource "settings.conf"))))
+  (println "Done..."))
+(defn- generate-bash-script []
+  (println "Generating bash script. Don't forget to set it to executable")
+  (with-open [writer (io/writer "eyespy")]
+    (.write writer (slurp (io/resource "eyespy"))))
+  (println "Done..."))
+
 (defn -main [& args]
   (if (empty? args)
-    (println "No args
-Try --watch <file> (line-seperated files to watch)
-or <file1> <file2> <file3> <etc>")
-    (if @running
-      (do
-        (println "EyeSpy starting...")
-        (let [files (watchable-files args)
-              broadcast-channel (lamina/permanent-channel)
-              server (http/start-http-server (listener-handler broadcast-channel) {:port 4321 :websocket true})]
-          (println "EyeSpy started...")
-          (while @running
-            (run-actions)
-            (let [changed? (watch-files files)]
-              (if changed?
-                (notify-browsers files broadcast-channel))
-              (Thread/sleep 100)))
-          (println "Stopping EyeSpy...")
-          (server)
-          (println "Exiting EyeSpy..."))))))
+    (println "No args given.
+-- options accepted ---
+--watch <file> (one file with all the files to watch)
+--watch <file1> <file2> <file3> <etc>
+--settings <settings-file>
+--generate javascript -- generates the javascript file
+--generate settings -- generates a sample settings file
+--generate bash -- generates a bash script for starting EyeSpy
+--generate all -- generates all of the above
+")
+    (case (first args)
+      "--generate" (case (second args)
+                     "javascript" (generate-javascript)
+                     "settings" (generate-settings)
+                     "bash" (generate-bash-script)
+                     "all" (do
+                             (generate-javascript)
+                             (generate-settings)
+                             (generate-bash-script))
+                     :else (println "Missing second argument"))
+      :else
+      (if @running
+        (do
+          (println "EyeSpy starting...")
+          (let [files (watchable-files args)
+                broadcast-channel (lamina/permanent-channel)
+                server (http/start-http-server (listener-handler broadcast-channel) {:port 4321 :websocket true})]
+            (println "EyeSpy started...")
+            (while @running
+              (run-actions)
+              (let [changed? (watch-files files)]
+                (if changed?
+                  (notify-browsers files broadcast-channel))
+                (Thread/sleep 100)))
+            (println "Stopping EyeSpy...")
+            (server)
+            (println "Exiting EyeSpy...")))))))
 
 ;;(reset! running false)
 ;;(-main "--settings" "settings.clj")
