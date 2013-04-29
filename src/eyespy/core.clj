@@ -23,14 +23,14 @@
 
 (defn- watchable-files [args]
   (case (first args)
-        "--watch" (if (fs/file? (second args))
-                    (let [files (line-seq (io/reader (second args)))]
-                      (return-files files))
-                    (println "Missing argument to --watch"))
-        "--settings" (if (fs/file? (second args))
-                       (read-settings (second args))
-                       (println "Missing argument to --settings"))
-        (return-files args)))
+    "--watch" (if (fs/file? (second args))
+                (let [files (line-seq (io/reader (second args)))]
+                  (return-files files))
+                (println "Missing argument to --watch"))
+    "--settings" (if (fs/file? (second args))
+                   (read-settings (second args))
+                   (println "Missing argument to --settings"))
+    (return-files args)))
 
 (defn- watch-files [files]
   (loop [[f & r] (keys @files)
@@ -104,8 +104,7 @@ Licensed to" (slurp (io/resource "license")) "\n\n\n------\n")
                              (generate-javascript)
                              (generate-settings)
                              (generate-bash-script))
-                     :else (println "Missing second argument"))
-      :else
+                     (println "Missing second argument"))
       (if @running
         (do
           (println "EyeSpy starting...")
@@ -123,8 +122,8 @@ Licensed to" (slurp (io/resource "license")) "\n\n\n------\n")
             (server)
             (println "Exiting EyeSpy...")))))))
 
-;;(reset! running false)
-;;(-main "--settings" "settings.clj")
-;;(read-settings "settings.clj")
-;;(reset! running true)
+;; (reset! running false)
+;; (-main "--settings" "settings.clj")
+;; (read-settings "settings.clj")
+;; (reset! running true)
 
