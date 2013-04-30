@@ -46,20 +46,17 @@
           (swap! files assoc f {:mod (fs/mod-time f) :changed? true})
           (recur r true))))))
 
-(defn- check-directories [files directories]
-  (if (empty? @directories)
-    files
-    (doseq [dir @directories]
-      (let [listed (fs/listdir dir)
-            files-in-dir (map #(clojure.string/replace % #"/" "")
-                              (filter #(.startsWith % dir) (keys @files)))
-            files-missing (cset/difference (set files-in-dir) (set listed))
-            files-missing-dir (cset/difference (set listed) (set files-in-dir))]
-        (doseq [file files-missing-dir]
-          (swap! files assoc file {f {:mod (fs/mod-time f) :changed? false}}))
-        (doseq [file files-missing]
-          (swap! files dissoc file))
-        files))))
+(defn- check-directories []
+  (doseq [[command files] @-actions]
+    (let [listed (fs/listdir dir)
+          files-in-dir (map #(clojure.string/replace % #"/" "")
+                            (filter #(.startsWith % dir) (keys @files)))
+          files-missing (cset/difference (set files-in-dir) (set listed))
+          files-missing-dir (cset/difference (set listed) (set files-in-dir))]
+      (doseq [file files-missing-dir]
+        (swap! files assoc file {f {:mod (fs/mod-time f) :changed? false}}))
+      (doseq [file files-missing]
+        (swap! files dissoc file)))))
 
 (defn- notify-browsers [files channel]
   (doseq [f (keys @files)]
@@ -143,10 +140,10 @@ Licensed to" (slurp (io/resource "license")) "\n\n\n------\n")
             (println "EyeSpy started...")
             (while @running
               (run-actions)
-              (let [files (check-directories files directories)
-                    changed? (watch-files files)]
+              (let [changed? (watch-files files)]
                 (if changed?
                   (notify-browsers files broadcast-channel))
+                (check-directories)
                 (Thread/sleep 100)))
             (println "Stopping EyeSpy...")
             (server)
