@@ -81,7 +81,7 @@
   (doseq [[command watch] @-actions]
     (if (watch-files watch)
       (let [res (apply sh (clojure.string/split command #" "))]
-        (if (= (:exit res) 1)
+        (if (not (zero? (:exit res)))
           (do
             (println (:err res))
             (println "Was running command" command)))))))
@@ -150,6 +150,15 @@ Licensed to" (slurp (io/resource "license")) "\n\n\n------\n")
                 broadcast-channel (lamina/permanent-channel)
                 server (http/start-http-server (listener-handler broadcast-channel) {:port 4321 :websocket true})]
             (println "EyeSpy started...")
+            (println "Watching files")
+            (doseq [file (keys @files)]
+              (println file))
+            (if (not (empty? @-actions))
+              (do
+                (println "Watching files in directory")
+                (doseq [[_ watched] @-actions]
+                  (doseq [file (keys @watched)]
+                    (println file)))))
             (while @running
               (run-actions)
               (let [changed? (watch-files files)]
