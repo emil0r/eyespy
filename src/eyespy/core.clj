@@ -151,5 +151,5 @@ Licensed to" (slurp (io/resource "license")) "\n\n\n------\n")
 
 ;; (reset! running false)
 ;; (-main "--settings" "settings.clj")
-(read-settings "settings.clj")
+;;(read-settings "settings.clj")
 ;; (reset! running true)
