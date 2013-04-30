@@ -2,12 +2,14 @@
   (:gen-class)
   (:require [aleph.http :as http]
             [clojure.java.io :as io]
+            [clojure.set :as cset]
             [fs.core :as fs]
             [lamina.core :as lamina])
   (:use [clojure.java.shell :only [sh]]))
 
 (def running (atom true))
 (def -actions (atom {}))
+(def directories (atom []))
 
 (defn- return-files [files]
   (doseq [missing-file (filter #(and (not (fs/file? %))
@@ -18,6 +20,7 @@
 (defn- read-settings [file]
   (let [{:keys [notify actions] :as data} (read-string (slurp file))]
     (doseq [{:keys [command watch-dir]} actions]
+      (swap! directories conj watch-dir)
       (swap! -actions assoc command (return-files (map #(str watch-dir %) (fs/list-dir watch-dir)))))
     (return-files notify)))
 
@@ -42,6 +45,21 @@
         (do
           (swap! files assoc f {:mod (fs/mod-time f) :changed? true})
           (recur r true))))))
+
+(defn- check-directories [files directories]
+  (if (empty? @directories)
+    files
+    (doseq [dir @directories]
+      (let [listed (fs/listdir dir)
+            files-in-dir (map #(clojure.string/replace % #"/" "")
+                              (filter #(.startsWith % dir) (keys @files)))
+            files-missing (cset/difference (set files-in-dir) (set listed))
+            files-missing-dir (cset/difference (set listed) (set files-in-dir))]
+        (doseq [file files-missing-dir]
+          (swap! files assoc file {f {:mod (fs/mod-time f) :changed? false}}))
+        (doseq [file files-missing]
+          (swap! files dissoc file))
+        files))))
 
 (defn- notify-browsers [files channel]
   (doseq [f (keys @files)]
@@ -114,7 +132,8 @@ Licensed to" (slurp (io/resource "license")) "\n\n\n------\n")
             (println "EyeSpy started...")
             (while @running
               (run-actions)
-              (let [changed? (watch-files files)]
+              (let [files (check-directories files directories)
+                    changed? (watch-files files)]
                 (if changed?
                   (notify-browsers files broadcast-channel))
                 (Thread/sleep 100)))
@@ -124,6 +143,5 @@ Licensed to" (slurp (io/resource "license")) "\n\n\n------\n")
 
 ;; (reset! running false)
 ;; (-main "--settings" "settings.clj")
-;; (read-settings "settings.clj")
+(read-settings "settings.clj")
 ;; (reset! running true)
-
