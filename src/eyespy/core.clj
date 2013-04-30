@@ -135,9 +135,15 @@ http://emil0r.com/eyespy
 --help -- this info
 "))
 
+(defn- print-quote []
+  (let [quotes (:quotes (read-string (slurp (io/resource "work.clj"))))
+        {:keys [text from]} (nth quotes (rand-int (count quotes)))]
+    (println text)
+    (println from)))
+
 (defn -main [& args]
-  (println "EyeSpy, with my eye...
-" (slurp (io/resource "license")) "\n\n\n------\n")
+  (println "EyeSpy, with my eye...""\n------")
+  (print-quote)
   (if (empty? args)
     (print-help)
     (case (first args)
