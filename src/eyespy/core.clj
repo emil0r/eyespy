@@ -17,10 +17,11 @@
     (println missing-file "can't be found"))
   (atom (apply merge {} (map (fn [f] {f {:mod (fs/mod-time f) :changed? false}}) (filter fs/file? files)))))
 
-(defn- read-settings [file]
-  (let [{:keys [notify actions] :as data} (read-string (slurp file))]
-    (doseq [{:keys [command watch-dir]} actions]
-      (swap! directories conj watch-dir)
+(defn- read-settings [file profile]
+  (let [data ((read-string (slurp file)) (keyword profile))
+        {:keys [notify actions]} data]
+    (doseq [{:keys [command watch-dir pattern]} actions]
+      (swap! directories conj {:directory watch-dir :pattern (re-pattern pattern)})
       (swap! -actions assoc command (return-files (map #(str watch-dir %) (fs/list-dir watch-dir)))))
     (return-files notify)))
 
@@ -30,8 +31,10 @@
                 (let [files (line-seq (io/reader (second args)))]
                   (return-files files))
                 (println "Missing argument to --watch"))
-    "--settings" (if (fs/file? (second args))
-                   (read-settings (second args))
+    "--settings" (if (and
+                      (fs/file? (second args))
+                      (not (nil? (nth args 2))))
+                   (read-settings (second args) (nth args 2))
                    (println "Missing argument to --settings"))
     (return-files args)))
 
@@ -48,20 +51,20 @@
 
 (defn- check-directories []
   (doseq [[_ files] @-actions]
-    (doseq [dir @directories]
-      (let [listed (fs/list-dir dir)
-            files-in-dir (map #(-> % (clojure.string/replace (re-pattern dir) "") (clojure.string/replace #"/" ""))
-                              (filter #(.startsWith % dir) (keys @files)))
+    (doseq [{:keys [directory pattern]} @directories]
+      (let [listed (filter #(re-find pattern %) (fs/list-dir directory))
+            files-in-dir (map #(-> % (clojure.string/replace (re-pattern directory) "") (clojure.string/replace #"/" ""))
+                              (filter #(.startsWith % directory) (keys @files)))
             files-missing (cset/difference (set files-in-dir) (set listed))
             files-missing-dir (cset/difference (set listed) (set files-in-dir))]
         (doseq [file files-missing-dir]
-          (let [file-to-add (str dir file)]
+          (let [file-to-add (str directory file)]
             (if (not (fs/directory? file-to-add))
               (do
                 (println "Adding file to watch-list ->" file-to-add)
                 (swap! files assoc file-to-add {file {:mod (fs/mod-time file-to-add) :changed? false}})))))
         (doseq [file files-missing]
-          (let [file-to-remove (str dir file)]
+          (let [file-to-remove (str directory file)]
             (if (not (fs/directory? file-to-remove))
               (do
                 (println "Removing file from watch-list ->" file-to-remove)
