@@ -84,20 +84,31 @@
     (lamina/enqueue broadcast-channel "Connected...")))
 
 (defn- generate-javascript []
-  (println "Generating eyespy.js")
-  (with-open [writer (io/writer "eyespy.js")]
-    (.write writer (slurp (io/resource "eyespy.js"))))
-  (println "Done..."))
+  (if (fs/file? "eyespy.js")
+    (println "eyespy.js already exists. Aborting.")
+    (do
+      (println "Generating eyespy.js")
+      (with-open [writer (io/writer "eyespy.js")]
+        (.write writer (slurp (io/resource "eyespy.js"))))
+      (println "Done..."))))
+
 (defn- generate-settings []
-  (println "Generating sample settings file")
-  (with-open [writer (io/writer "settings.conf")]
-    (.write writer (slurp (io/resource "settings.conf"))))
-  (println "Done..."))
+  (if (fs/file? "settings.conf")
+    (println "settings.conf already exists. Aborting.")
+    (do
+      (println "Generating sample settings file")
+      (with-open [writer (io/writer "settings.conf")]
+        (.write writer (slurp (io/resource "settings.conf"))))
+      (println "Done..."))))
+
 (defn- generate-bash-script []
-  (println "Generating bash script. Don't forget to set it to executable")
-  (with-open [writer (io/writer "eyespy")]
-    (.write writer (slurp (io/resource "eyespy"))))
-  (println "Done..."))
+  (if (fs/file? "eyespy")
+    (println "eyespy script already exists. Aborting.")
+    (do
+      (println "Generating bash script. Don't forget to set it to executable")
+      (with-open [writer (io/writer "eyespy")]
+        (.write writer (slurp (io/resource "eyespy"))))
+      (println "Done..."))))
 
 (defn -main [& args]
   (println "EyeSpy, with my eye...
