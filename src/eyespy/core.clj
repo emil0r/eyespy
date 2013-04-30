@@ -119,12 +119,12 @@
         (.write writer (slurp (io/resource "eyespy"))))
       (println "Done..."))))
 
-(defn -main [& args]
-  (println "EyeSpy, with my eye...
-Licensed to" (slurp (io/resource "license")) "\n\n\n------\n")
-  (if (empty? args)
-    (println "No args given.
--- options accepted ---
+(defn- print-help []
+  (println "
+EyeSpy - version 1.1
+Written by Emil Bengtsson <emil@emil0r.com>
+http://emil0r.com/eyespy
+
 --watch <file> (one file with all the files to watch)
 --watch <file1> <file2> <file3> <etc>
 --settings <settings-file>
@@ -132,7 +132,14 @@ Licensed to" (slurp (io/resource "license")) "\n\n\n------\n")
 --generate settings -- generates a sample settings file
 --generate bash -- generates a bash script for starting EyeSpy
 --generate all -- generates all of the above
-")
+--help -- this info
+"))
+
+(defn -main [& args]
+  (println "EyeSpy, with my eye...
+" (slurp (io/resource "license")) "\n\n\n------\n")
+  (if (empty? args)
+    (print-help)
     (case (first args)
       "--generate" (case (second args)
                      "javascript" (generate-javascript)
@@ -143,6 +150,7 @@ Licensed to" (slurp (io/resource "license")) "\n\n\n------\n")
                              (generate-settings)
                              (generate-bash-script))
                      (println "Missing second argument"))
+      "--help" (print-help)
       (if @running
         (do
           (println "EyeSpy starting...")
