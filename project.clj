@@ -1,5 +1,5 @@
 (defproject eyespy "1.1"
-  :description "CSS Reloader"
+  :description "A CSS Reloader"
   :url "http://emil0r.com/eyespy"
   :license {:name "Eclipse Public License"
             :url "http://www.eclipse.org/legal/epl-v10.html"}
