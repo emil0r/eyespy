@@ -47,16 +47,25 @@
           (recur r true))))))
 
 (defn- check-directories []
-  (doseq [[command files] @-actions]
-    (let [listed (fs/listdir dir)
-          files-in-dir (map #(clojure.string/replace % #"/" "")
-                            (filter #(.startsWith % dir) (keys @files)))
-          files-missing (cset/difference (set files-in-dir) (set listed))
-          files-missing-dir (cset/difference (set listed) (set files-in-dir))]
-      (doseq [file files-missing-dir]
-        (swap! files assoc file {f {:mod (fs/mod-time f) :changed? false}}))
-      (doseq [file files-missing]
-        (swap! files dissoc file)))))
+  (doseq [[_ files] @-actions]
+    (doseq [dir @directories]
+      (let [listed (fs/list-dir dir)
+            files-in-dir (map #(-> % (clojure.string/replace (re-pattern dir) "") (clojure.string/replace #"/" ""))
+                              (filter #(.startsWith % dir) (keys @files)))
+            files-missing (cset/difference (set files-in-dir) (set listed))
+            files-missing-dir (cset/difference (set listed) (set files-in-dir))]
+        (doseq [file files-missing-dir]
+          (let [file-to-add (str dir file)]
+            (if (not (fs/directory? file-to-add))
+              (do
+                (println "Adding file to watch-list ->" file-to-add)
+                (swap! files assoc file-to-add {file {:mod (fs/mod-time file-to-add) :changed? false}})))))
+        (doseq [file files-missing]
+          (let [file-to-remove (str dir file)]
+            (if (not (fs/directory? file-to-remove))
+              (do
+                (println "Removing file from watch-list ->" file-to-remove)
+                (swap! files dissoc file-to-remove)))))))))
 
 (defn- notify-browsers [files channel]
   (doseq [f (keys @files)]
