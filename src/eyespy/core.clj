@@ -102,12 +102,12 @@
       (println "Done..."))))
 
 (defn- generate-settings []
-  (if (fs/file? "settings.conf")
-    (println "settings.conf already exists. Aborting.")
+  (if (fs/file? "settings.edn")
+    (println "settings.edn already exists. Aborting.")
     (do
       (println "Generating sample settings file")
-      (with-open [writer (io/writer "settings.conf")]
-        (.write writer (slurp (io/resource "settings.conf"))))
+      (with-open [writer (io/writer "settings.edn")]
+        (.write writer (slurp (io/resource "settings.edn"))))
       (println "Done..."))))
 
 (defn- generate-bash-script []
