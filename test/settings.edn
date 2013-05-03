@@ -1,0 +1,8 @@
+{:project1 {:notify ["test/watch.css"]
+            :actions [{:command "ls"
+                       :watch-dir "test"
+                       :pattern "^[\\w+0-9]+"}]}
+ :project2 {:notify [{:file "test/watch.css" :alias "css/watch.css"}]
+            :actions [{:command "ls"
+                       :watch-dir "test"
+                       :pattern "^[\\w+0-9]+"}]}}

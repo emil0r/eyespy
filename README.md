@@ -9,7 +9,7 @@ Can have actions taken when files in a directory change (like, editing .less/.sa
 ```bash
 java -jar eyespy.jar file1 file2  
 java -jar eyespy.jar --watch file-with-all-the-files-i-want-to-watch
-java -jar eyespy.jar --settings settings-file
+java -jar eyespy.jar --settings settings-file project-name
 ```
 
 Example settings file

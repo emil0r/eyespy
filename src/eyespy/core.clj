@@ -11,13 +11,20 @@
 (def -actions (atom {}))
 (def directories (atom []))
 
-(defn- return-files [files]
-  (doseq [missing-file (filter #(and (not (fs/file? %))
-                                     (not (fs/directory? %))) files)]
-    (println missing-file "can't be found"))
-  (atom (apply merge {} (map (fn [f] {f {:mod (fs/mod-time f) :changed? false}}) (filter fs/file? files)))))
+(defmulti return-files (fn [x] (-> x first class)))
+(defmethod return-files clojure.lang.PersistentArrayMap [files]
+  (doseq [{:keys [file as]} (filter #(and (not (fs/file? (:file %)))
+                                          (not (fs/directory? (:file %)))) files)]
+    (println file "can't be found"))
+  (atom (apply merge {} (map (fn [{:keys [file alias]}] {file {:mod (fs/mod-time file) :changed? false :alias alias}}) (filter #(fs/file? (:file %)) files)))))
 
-(defn- read-settings [file profile]
+(defmethod return-files :default [files]
+  (doseq [file (filter #(and (not (fs/file? %))
+                             (not (fs/directory? %))) files)]
+    (println file "can't be found"))
+  (atom (apply merge {} (map (fn [file] {file {:mod (fs/mod-time file) :changed? false :alias file}}) (filter fs/file? files)))))
+
+(defn read-settings [file profile]
   (let [data ((read-string (slurp file)) (keyword profile))
         {:keys [notify actions]} data]
     (doseq [{:keys [command watch-dir pattern]} actions]
@@ -75,7 +82,7 @@
     (if (:changed? (@files f))
       (do
         (println f "changed")
-        (lamina/enqueue channel f)))))
+        (lamina/enqueue channel (:as (@files f)))))))
 
 (defn- run-actions []
   (doseq [[command watch] @-actions]
@@ -121,7 +128,7 @@
 
 (defn- print-help []
   (println "
-EyeSpy - version 1.1
+EyeSpy - version 1.1.1
 Written by Emil Bengtsson <emil@emil0r.com>
 http://emil0r.com/eyespy
 
