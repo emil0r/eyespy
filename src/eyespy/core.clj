@@ -13,8 +13,8 @@
 
 (defmulti return-files (fn [x] (-> x first class)))
 (defmethod return-files clojure.lang.PersistentArrayMap [files]
-  (doseq [{:keys [file as]} (filter #(and (not (fs/file? (:file %)))
-                                          (not (fs/directory? (:file %)))) files)]
+  (doseq [{:keys [file]} (filter #(and (not (fs/file? (:file %)))
+                                       (not (fs/directory? (:file %)))) files)]
     (println file "can't be found"))
   (atom (apply merge {} (map (fn [{:keys [file alias]}] {file {:mod (fs/mod-time file) :changed? false :alias alias}}) (filter #(fs/file? (:file %)) files)))))
 
@@ -52,8 +52,8 @@
       changed?
       (if (= (:mod (@files f)) (fs/mod-time f))
         (recur r changed?)
-        (do
-          (swap! files assoc f {:mod (fs/mod-time f) :changed? true})
+        (let [alias (:alias (@files f))]
+          (swap! files assoc f {:mod (fs/mod-time f) :changed? true :alias alias})
           (recur r true))))))
 
 (defn- check-directories []
@@ -82,7 +82,7 @@
     (if (:changed? (@files f))
       (do
         (println f "changed")
-        (lamina/enqueue channel (:as (@files f)))))))
+        (lamina/enqueue channel (:alias (@files f)))))))
 
 (defn- run-actions []
   (doseq [[command watch] @-actions]
