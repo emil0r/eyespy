@@ -2,7 +2,7 @@
             :actions [{:command "command to run after files in the watch dir has changed"
                        :watch-dir "/path/to/a/directory/to/watch"
                        :pattern "^[\\w+0-9]+"}]}
- :project2 {:notify [{:file "/path/to/file/to/watch.css" :as "css/watch.css"}]
+ :project2 {:notify [{:file "/path/to/file/to/watch.css" :alias "css/watch.css"}]
             :actions [{:command "command to run after files in the watch dir has changed"
                        :watch-dir "/path/to/a/directory/to/watch"
                        :pattern "^[\\w+0-9]+"}]}}
