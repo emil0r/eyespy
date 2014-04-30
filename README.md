@@ -40,7 +40,7 @@ Load the eyespy.js script, then run the following:
 
 ## Where?
 
-http://emil0r.com/eyespy
+http://emil0r.com/projects/eyespy
 
 ## License
 
